@@ -1,0 +1,4 @@
+/.env/
+/.vscode
+*.html
+__pycache__
