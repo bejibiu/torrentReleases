@@ -58,8 +58,7 @@ def main():
     print("Работа программы завершена успешно.")
 
     return 0
-
-
+    
 def rutorResultsForDays(days):
     targetDate = datetime.date.today() - datetime.timedelta(days=days)
     groups = [1, 5, 7, 10]
@@ -695,7 +694,7 @@ def parseRutorElement(dict):
     if not match:
         return None
 
-    year = match[1]
+    year = match.group(1)
     targetYear = (datetime.date.today() - datetime.timedelta(days=365)).year
     if int(year) < targetYear:
         return None
@@ -798,7 +797,7 @@ def rutorResultsOnPage(content):
 
     try:
         resultsGroup = soup.find("div", id="index")
-    except Exception as e:
+    except Exception:
         raise ValueError("{} {}".format(datetime.datetime.now(), "Нет блока с торрентами."))
     if resultsGroup == None:
         raise ValueError("{} {}".format(datetime.datetime.now(), "Нет блока с торрентами."))
@@ -829,13 +828,13 @@ def rutorResultsOnPage(content):
             torrentDate = datetime.date(
                 (int(components[2]) + 2000) if int(components[2]) < 2000 else int(components[2]),
                 RUTOR_MONTHS[components[1]], int(components[0]))
-        except Exception as e:
+        except Exception:
             raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока даты."))
 
         try:
             seeders = int(peersElement.find("span", class_="green").get_text(strip=True))
             leechers = int(peersElement.find("span", class_="red").get_text(strip=True))
-        except Exception as e:
+        except Exception:
             raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока пиров."))
 
         try:
@@ -852,10 +851,8 @@ def rutorResultsOnPage(content):
 
             components = sizeStr.split(u"\xa0")
             torrentSize = int(float(components[0]) * multiplier)
-        except Exception as e:
+        except Exception:
             raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока размера."))
-            continue
-
         try:
             mainElements = mainElement.find_all("a")
             torrentFileLink = mainElements[0].get("href").strip()
@@ -953,7 +950,7 @@ def kinozalAuth(username, password, useProxy=True):
     data = urllib.parse.urlencode(values).encode()
 
     request = urllib.request.Request("http://kinozal.tv/takelogin.php", data=data, headers=headers)
-    response = opener.open(request)
+    _ = opener.open(request)
     cookieSet = set()
 
     for cookie in cookiejar:
@@ -971,7 +968,7 @@ def kinozalSearch(filmDetail, opener, type):
     headers["Accept-encoding"] = "gzip"
     headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"
 
-    result = {}
+    _ = {}
     DBResults = []
     PMResults = []
 
@@ -1095,7 +1092,7 @@ def kinozalSearch(filmDetail, opener, type):
             return None
 
         return {"link": "http://dl.kinozal.tv/download.php?id={}".format(DBResults[0]["kinozalID"]),
-                "magnet": "magnet:?xt=urn:btih:{}&dn=kinozal.tv".format(match[0]), "date": DBResults[0]["torrentDate"],
+                "magnet": "magnet:?xt=urn:btih:{}&dn=kinozal.tv".format(match.group(0)), "date": DBResults[0]["torrentDate"],
                 "type": type}
     elif len(PMResults) > 0:
         newPMResults = []
@@ -1154,7 +1151,7 @@ def kinozalSearch(filmDetail, opener, type):
                 return None
 
             return {"link": "http://dl.kinozal.tv/download.php?id={}".format(newPMResults[0]["kinozalID"]),
-                    "magnet": "magnet:?xt=urn:btih:{}&dn=kinozal.tv".format(match[0]),
+                    "magnet": "magnet:?xt=urn:btih:{}&dn=kinozal.tv".format(match.group(0)),
                     "date": newPMResults[0]["torrentDate"], "type": type}
     return None
 
@@ -1486,7 +1483,7 @@ function sortTorrentsDate(){
                     </div>
                   </td>
                 </tr>"""
-    buttonsTemplate = "          <a class='torrentbutton' href={}>{}</a>"
+    buttonsTemplate = "          <a class='torrentbutton' href='start/?torrent_url={}'>отправить на скачку</a><a class='torrentbutton' href={}>{}</a>"
     movieTemplate = """      <div class="block2" data-releaseDate="{}" data-torrentDate="{}" data-rating="{}" data-comboDate="{}">
         <div class="photoInfoTable">
           <div class="headerFilm">
@@ -1578,7 +1575,7 @@ function sortTorrentsDate(){
             if useMagnet:
                 buttonsBlock += buttonsTemplate.format(torrent["magnet"], torrent["type"])
             else:
-                buttonsBlock += buttonsTemplate.format(torrent["link"], torrent["type"])
+                buttonsBlock += buttonsTemplate.format(torrent["link"],torrent["link"], torrent["type"])
 
         displayOrigName = "display: none;"
         if len(movie["nameOriginal"]) > 0:
@@ -1611,9 +1608,7 @@ function sortTorrentsDate(){
     return
 
 
-try:
-    exitCode = main()
-except:
-    exitCode = 1
+exitCode = main()
+
 
 sys.exit(exitCode)

@@ -4,12 +4,13 @@ import binascii
 
 BASE_DIR = os.path.dirname(__file__)
 LOAD_DAYS = 20
-USE_MAGNET = True
+USE_MAGNET = False
 SORT_TYPE = "torrentsDate" #rating
 MIN_VOTES_KP = 500
 MIN_VOTES_IMDB = 1500
 HTML_SAVE_PATH = os.path.join(BASE_DIR,"releases.html")
 
+TRANSMISSION_URL = 'http://192.168.0.80:9091/transmission/rpc/'
 
 CONNECTION_ATTEMPTS = 3
 
