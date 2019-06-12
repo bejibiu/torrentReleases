@@ -1,7 +1,8 @@
-from flask import Flask, request
+from flask import Flask, request, redirect
 import json
 import requests
 from settings import TRANSMISSION_URL
+from digitalreleases2 import start_create_release_page
 
 app = Flask(__name__)
 PAUSED = False
@@ -12,6 +13,14 @@ def hello():
     with open("releases.html",'br') as f:
         page = f.read()
     return page
+
+@app.route("/reload/", methods = ['GET'])
+def refresh_release():
+    load_days = request.args.get('load_days',7)
+    status_code = start_create_release_page(load_days)
+    if status_code:
+        return "very bad =("
+    return redirect(hello)
 
 @app.route("/start/", methods = ['GET'])
 def load_torrent():

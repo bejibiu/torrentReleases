@@ -31,7 +31,7 @@ if SOCKS5_IP:
     from sockshandler import SocksiPyHandler
 
 
-def main():
+def start_create_release_page(load_days=LOAD_DAYS):
     print("Дата и время запуска программы: " + str(datetime.datetime.now()) + ".")
     print("Количество попыток при ошибках соединения: " + str(CONNECTION_ATTEMPTS) + ".")
 
@@ -51,16 +51,16 @@ def main():
         print("Сайт rutor.info доступен.")
 
     print("Анализ раздач...")
-    results = rutorResultsForDays(LOAD_DAYS)
-    movies = convertRutorResults(results)
+    results = rutorResultsForDays(load_days)
+    movies = convertRutorResults(results, load_days)
     movies.sort(key=operator.itemgetter("torrentsDate"), reverse=True)
     saveHTML(movies, HTML_SAVE_PATH)
     print("Работа программы завершена успешно.")
 
     return 0
     
-def rutorResultsForDays(days):
-    targetDate = datetime.date.today() - datetime.timedelta(days=days)
+def rutorResultsForDays(load_days):
+    targetDate = datetime.date.today() - datetime.timedelta(days=load_days)
     groups = [1, 5, 7, 10]
     tmpSet = set()
     tmpResults = {}
@@ -116,8 +116,8 @@ def rutorResultsForDays(days):
     return tmpResults
 
 
-def convertRutorResults(rutorResults):
-    targetDate = datetime.date.today() - datetime.timedelta(days=LOAD_DAYS)
+def convertRutorResults(rutorResults, load_days):
+    targetDate = datetime.date.today() - datetime.timedelta(days=load_days)
     minPremierDate = datetime.date.today() - datetime.timedelta(days=365)
 
     movies = []
@@ -1607,8 +1607,10 @@ function sortTorrentsDate(){
     f.close()
     return
 
-
-exitCode = main()
-
-
-sys.exit(exitCode)
+if __name__ == "__main__":
+    try:
+        exitCode = start_create_release_page()
+    except:
+        exitCode = 1
+        
+    sys.exit(exitCode)
