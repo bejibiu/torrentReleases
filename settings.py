@@ -31,5 +31,4 @@ KINOZAL_SEARCH_BDRIP = "http://kinozal.tv/browse.php?s=%5E{}&g=3&c=0&v=3&d=0&w=0
 KINOZAL_USERNAME = ""
 KINOZAL_PASSWORD = ""
 
-
-
+SOCKS5_IP = '127.0.0.1'

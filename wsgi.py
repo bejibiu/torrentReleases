@@ -16,16 +16,19 @@ def hello():
 
 @app.route("/reload/", methods = ['GET'])
 def refresh_release():
-    load_days = request.args.get('load_days',7)
+    load_days = int(request.args.get('load_days',7))
     status_code = start_create_release_page(load_days)
     if status_code:
         return "very bad =("
-    return redirect(hello)
+    return redirect('/')
 
 @app.route("/start/", methods = ['GET'])
 def load_torrent():
     torrent_url = request.args.get('torrent_url')
-    transmission_header = get_ttransmission_header()
+    try:
+        transmission_header = get_ttransmission_header()
+    except ConnectionError:
+        return "not connect to transmission"
     data = {"method": "torrent-add",
             "arguments": {
                 "paused": PAUSED,
@@ -41,7 +44,11 @@ def load_torrent():
     
     
 def get_ttransmission_header() -> str:
-    response =requests.get(TRANSMISSION_URL)
+    try:
+        response =requests.get(TRANSMISSION_URL)
+    except requests.ConnectionError:
+        app.logger.info("Not connect to transmission")
+        raise ConnectionError
     return {'X-Transmission-Session-Id':response.headers.get('X-Transmission-Session-Id')}
 
 if __name__ == "__main__":

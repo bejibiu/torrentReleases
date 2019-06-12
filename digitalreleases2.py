@@ -21,10 +21,9 @@ from settings import (
     CONNECTION_ATTEMPTS, RUTOR_BASE_URL, RUTOR_MONTHS, RUTOR_SEARCH_MAIN, KINOPOISK_API_IOS_BASE_URL,
     KINOPOISK_API_V1_BASE_URL, KINOPOISK_API_IOS_FILMDETAIL, KINOPOISK_API_SALT, KINOPOISK_CLIENTID,
     KINOPOISK_UUID, KINOPOISK_POSTER_URL, KINOZAL_SEARCH_BDREMUX, KINOZAL_SEARCH_BDRIP, KINOZAL_USERNAME,
-    KINOZAL_PASSWORD
+    KINOZAL_PASSWORD, SOCKS5_IP
 )
 
-SOCKS5_IP = ""
 SOCKS5_PORT = 9050
 if SOCKS5_IP:
     import socks
@@ -1215,6 +1214,18 @@ def saveHTML(movies, filePath, useMagnet=USE_MAGNET):
     font-family: tahoma,verdana,arial;
     font-size: 13px;
   }
+  .linkButton {
+    display: inline-block;
+    background:none;
+    border:none;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding:0;
+    cursor: pointer;
+    text-decoration: dashed underline;
+    font-family: tahoma,verdana,arial;
+    font-size: 13px;
+  }
 """
     if (SORT_TYPE == "torrentsDate"):
         html += """  #sortButton1 {
@@ -1470,6 +1481,7 @@ function sortTorrentsDate(){
 <body>
   <div class="shadow">
     <div class="sbb">
+      <a id="refrash_page" class="linkButton" href="/reload/?load_days=1">обновить раздачи</a>
       <button id="sortButton1" class="sButton" onclick="sortRating()">по рейтингу</button>
       <button id="sortButton2" class="sButton" onclick="sortTorrentsDate()">по дате торрент-релиза</button>
     </div>
