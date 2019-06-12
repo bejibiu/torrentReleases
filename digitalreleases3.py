@@ -1698,31 +1698,7 @@ function sortTorrentsDate(){
 		descriptionBlock += descriptionTemplate.format("режиссёр", movie["directors"])
 		descriptionBlock += descriptionTemplate.format("актёры", movie["actors"])
 		descriptionBlock += descriptionTemplate.format("жанр", movie["genre"])
-		if len(movie["ratingAgeLimits"]) > 0:
-			try:
-				if int(movie["ratingAgeLimits"]) < 6:
-					descriptionBlock += descriptionTemplate.format("возраст", "любой")
-				elif int(movie["ratingAgeLimits"]) < 12:
-					descriptionBlock += descriptionTemplate.format("возраст", "от 6 лет")
-				elif int(movie["ratingAgeLimits"]) < 16:
-					descriptionBlock += descriptionTemplate.format("возраст", "от 12 лет")
-				elif int(movie["ratingAgeLimits"]) < 18:
-					descriptionBlock += descriptionTemplate.format("возраст", "от 16 лет")
-				else:
-					descriptionBlock += descriptionTemplate.format("возраст", "от 18 лет")
-			except:
-				pass
-		elif len(movie["ratingMPAA"]) > 0:
-			if movie["ratingMPAA"] == "G":
-				descriptionBlock += descriptionTemplate.format("возраст", "любой")
-			elif movie["ratingMPAA"] == "PG":
-				descriptionBlock += descriptionTemplate.format("возраст", "от 6 лет")
-			elif movie["ratingMPAA"] == "PG-13":
-				descriptionBlock += descriptionTemplate.format("возраст", "от 12 лет")
-			elif movie["ratingMPAA"] == "R":
-				descriptionBlock += descriptionTemplate.format("возраст", "от 16 лет")
-			else:
-				descriptionBlock += descriptionTemplate.format("возраст", "от 18 лет")
+		
 		descriptionBlock += descriptionTemplate.format("продолжительность", movie["filmLength"])
 		
 		if len(movie["ratingKP"]) > 0:
