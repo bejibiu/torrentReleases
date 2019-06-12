@@ -1,0 +1,449 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ru-RU">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive, noodp, noydir, nosnippet" />
+<meta content="width=960" name="viewport">
+<title>Новые цифровые релизы</title>
+<style type="text/css">
+  html {
+      background-color: #e6e6e6;
+      min-width: 1024px;
+      width: 100%;
+      position: relative;
+  }
+
+  body {
+      background: #e6e6e6;
+      color: #333;
+      font-family: tahoma,verdana,arial;
+      margin: 0;
+      padding: 0 0 22px 0;
+  }
+
+  * {
+      outline: 0;
+  }
+
+  .shadow {
+      box-shadow: 0px 10px 20px 0px rgba(0, 0, 0, 0.2);
+      width: 850px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+  }
+
+  .block1 {
+      width: 850px;
+      position: relative;
+      margin: 0 auto;
+  }
+  .sbb {
+      background-color: #f2f2f2;
+      text-align: right;
+      padding-right:10px;
+  }
+  .sButton {
+    display: inline-block;
+    background:none;
+    border:none;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding:0;
+    cursor: pointer;
+    text-decoration: dashed underline;
+    font-family: tahoma,verdana,arial;
+    font-size: 13px;
+  }
+  .linkButton {
+    display: inline-block;
+    background:none;
+    border:none;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding:0;
+    cursor: pointer;
+    text-decoration: dashed underline;
+    font-family: tahoma,verdana,arial;
+    font-size: 13px;
+  }
+  #sortButton1 {
+  }
+  #sortButton2 {
+  color: #f60;
+  }
+  .block2 {
+      position: relative;
+      background-color: #f2f2f2;
+      width: 100%;
+  }
+
+  .block2::before, .block2::after {
+      content: "";
+      display: table;
+  }
+
+  .block2::after, .photoInfoTable::after {
+      clear: both;
+  }
+
+  .photoInfoTable::before, .photoInfoTable::after {
+      content: "";
+      display: table;
+  }
+
+  .photoInfoTable {
+      width: 850px;
+      float: left;
+  }
+
+  .headerFilm h1 {
+      margin: 0;
+      padding: 0;
+  }
+
+  .headerFilm {
+      width: 700px;
+      padding: 20px 20px 20px 15px;
+      position: relative;
+  }
+
+
+  H1.moviename {
+      vertical-align: middle;
+      padding-left: 0px;
+      margin: 5px 0;
+      font-size: 25px;
+      font-weight: normal;
+  }
+
+  H1 {
+      font-size: 25px;
+      font-weight: normal;
+      color: #000;
+  }
+
+  .headerFilm > span {
+      color: #666;
+      font-size: 13px;
+  }
+
+  .film-img-box {
+      margin-left: 0;
+      position: relative;
+      left: -12px;
+      min-height: 205px;
+      margin-bottom: 15px;
+  }
+
+  .film-img-box img {
+      border: 0;
+  }
+
+  .photoBlock {
+      width: 210px;
+      padding: 0 0 0 0;
+      float: left;
+      position: relative;
+      font-size: 11px;
+  }
+
+  .movie-buttons-container {
+      margin-bottom: 20px;
+  }
+
+  .torrentbutton {
+      cursor: pointer;
+      border: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-color: #f60;
+      border-radius: 3px;
+      color: #fff;
+      display: block;
+      font: 12px Arial, sans-serif;
+      font-weight: normal;
+      line-height: normal;
+      font-weight: bold;
+      height: 35px;
+      line-height: 36px;
+      -webkit-transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+      -moz-transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+      transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+      text-align: center;
+      text-decoration: none;
+      width: 160px;
+      margin: 10px 0 10px 15px;
+      display:inline-block;
+  }
+
+  .trailersbutton {
+      cursor: pointer;
+      border: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-color: rgba(68, 68, 68, 0.9);
+      border-radius: 3px;
+      color: #fff;
+      display: block;
+      font: 12px Arial, sans-serif;
+      font-weight: normal;
+      line-height: normal;
+      font-weight: bold;
+      height: 35px;
+      line-height: 36px;
+      -webkit-transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+      -moz-transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+      transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+      text-align: center;
+      text-decoration: none;
+      width: 160px;
+      margin: 10px 0 10px 15px;
+      display:inline-block;
+  }
+
+  .infoTable {
+      float: left;
+      display: block;
+  }
+
+  .infoTable .info {
+      width: 465px;
+  }
+
+  .info, .info * {
+      border-collapse: collapse;
+      margin: 0;
+      padding: 0;
+  }
+
+  .info tr {
+      border-bottom: #DFDFDF solid 1px; 
+  }
+
+  .info .type {
+      color: #f60;
+      width: 119px;
+      padding-left: 23px;
+  }
+
+  .info td {
+      min-height: 14px;
+      vertical-align: top;
+      padding-bottom: 9px;
+      padding: 6px 0 6px 20px;
+  }
+
+  td {
+      font-family: tahoma,verdana,arial;
+      font-size: 11px;
+      color: #000;
+  }
+
+  .film-rating {
+      border-radius: 1px;
+      position: absolute;
+      left: 5px;
+      top: 5px;
+      z-index: 5;
+      box-shadow: none;
+      color: #fff;
+      width: 32px;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 13px;
+      padding: 3px 0 2px;
+      text-align: center;
+      font-family: Arial,Tahoma,Verdana,sans-serif;
+  }
+</style>
+<script>
+function sortElements(sortType){
+    var container = document.getElementsByClassName('block1')[0];
+    var newContainer = container.cloneNode(false);
+
+    var items = [];
+    for(var i = container.childNodes.length; i--;){
+        if(container.childNodes[i].nodeName === 'DIV')
+            items.push(container.childNodes[i]);
+    }
+    
+    if(sortType === "torrentDate") {
+    items.sort(function(a, b){
+       var aDate = new Date(a.getAttribute('data-torrentDate'));
+       var bDate = new Date(b.getAttribute('data-torrentDate'));
+       return (Number(bDate) - Number(aDate));
+    });
+    } else {
+    items.sort(function(a, b){
+       return (Math.round(parseFloat(b.getAttribute('data-rating'))*10) - Math.round(parseFloat(a.getAttribute('data-rating'))*10));
+    });
+    }
+    
+    for(var i = 0; i < items.length; i++)
+        newContainer.appendChild(items[i]);
+    container.parentNode.replaceChild(newContainer, container);
+}
+
+function sortRating(){
+    element = document.getElementById("sortButton1");
+    style = getComputedStyle(element);
+    if (style.color != "rgb(0, 0, 0)") {
+        return 0;
+    }
+    sortElements("rating");
+    document.getElementById("sortButton2").style.color = "black";
+    document.getElementById("sortButton1").style.color = "#f60";
+}
+
+function sortTorrentsDate(){
+    element = document.getElementById("sortButton2");
+    style = getComputedStyle(element);
+    if (style.color != "rgb(0, 0, 0)") {
+        return 0;
+    }
+    sortElements("torrentDate");
+    document.getElementById("sortButton1").style.color = "black";
+    document.getElementById("sortButton2").style.color = "#f60";
+}
+</script>
+</head>
+<body>
+  <div class="shadow">
+    <div class="sbb">
+      <a id="refrash_page" class="linkButton" href="/reload/?load_days=1">обновить раздачи</a>
+      <button id="sortButton1" class="sButton" onclick="sortRating()">по рейтингу</button>
+      <button id="sortButton2" class="sButton" onclick="sortTorrentsDate()">по дате торрент-релиза</button>
+    </div>
+    <div class="block1" style="background-color: #f2f2f2;">
+      {% for movie in movies%}
+      <div class="block2" data-releaseDate="{{movie.torrentsDate}}" data-torrentDate="{{movie.torrentsDate}}" data-rating="{{movie.rating}}" data-comboDate="{{movie.torrentDate}}">
+        <div class="photoInfoTable">
+          <div class="headerFilm">
+            <h1 class="moviename" itemprop="name">{{movie.nameRU}}</h1>
+            <span itemprop="alternativeHeadline" style="{{displayOrigName}}">{{movie.nameOriginal}}</span>
+          </div>
+          <div class="photoBlock">
+            <div class="film-img-box">
+              <div class="film-rating" style="{{movie.ratingStyle}}">{{rating}}</div> 
+              <img src="{{movie.posterURL}}" alt="{{movie.nameRU}}" itemprop="image" width="205"></img>
+            </div>
+            <div class="movie-buttons-container">
+              <button class="trailersbutton" style="" onclick="window.open('https://www.kinopoisk.ru/film/{{movie.ID}}/video/','_blank');">Трейлеры</button>
+            </div>
+          </div>
+          <div class="infoTable">
+            <table class="info">
+              <tbody>
+
+                <tr>
+                  <td class="type">год</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.year}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">страна</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.country}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">режиссёр</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.directors}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">актёры</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.actors}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">жанр</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.genre}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">возраст</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.ratingAgeLimits}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">продолжительность</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.filmLength}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">рейтинг КиноПоиск</td>
+                  <td>
+                    <div style="position: relative">
+                        <a href="{{movie.webURL}}" style="text-decoration: underline; color:black" target="_blank">{{movie.ratingKP}}</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">рейтинг IMDb</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.ratingIMDb}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">{{movie.premierType}}</td>
+                  <td>
+                    <div style="position: relative">
+                        {{premierDate}}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">торрент-релиз</td>
+                  <td>
+                    <div style="position: relative">
+                        <a href="http://rutor.info/search/0/0/010/0/film%20{{movie.filmID}}" style="text-decoration: underline; color:black" target="_blank">{{movie.sortTorrentsDate}}</a>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="type">описание</td>
+                  <td>
+                    <div style="position: relative">
+                        {{movie.description}}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="movie-buttons-container">
+          {%for torrent in movie}
+            <a class='torrentbutton' href='start/?torrent_url={{torrent.link}}'>отправить на скачку</a><a class='torrentbutton' href={{torrent.link}}>{{torrent.type}}</a>
+          {%endfor}
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

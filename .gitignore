@@ -1,5 +1,6 @@
 /.env/
 /.vscode
 /.idea/
-*.html
+index.html
+releases.html
 __pycache__
