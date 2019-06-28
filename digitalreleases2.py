@@ -15,6 +15,9 @@ import binascii
 import urllib.parse
 import http.cookiejar
 import sys
+from jinja2 import Template, Environment, FileSystemLoader
+
+from models import Movie
 
 from settings import (
     BASE_DIR, LOAD_DAYS, USE_MAGNET, SORT_TYPE, MIN_VOTES_KP, MIN_VOTES_IMDB, HTML_SAVE_PATH,
@@ -53,11 +56,12 @@ def start_create_release_page(load_days=LOAD_DAYS):
     results = rutorResultsForDays(load_days)
     movies = convertRutorResults(results, load_days)
     movies.sort(key=operator.itemgetter("torrentsDate"), reverse=True)
-    saveHTML(movies, HTML_SAVE_PATH)
+    compile_html(movies, HTML_SAVE_PATH)
     print("Работа программы завершена успешно.")
 
     return 0
-    
+
+
 def rutorResultsForDays(load_days):
     targetDate = datetime.date.today() - datetime.timedelta(days=load_days)
     groups = [1, 5, 7, 10]
@@ -330,14 +334,14 @@ def loadRutorContent(URL, attempts=CONNECTION_ATTEMPTS, useProxy=False):
 def rutorPagesCountForResults(content):
     soup = BeautifulSoup(content, 'html.parser')
 
-    if (soup == None):
+    if (not soup):
         raise ValueError("Ошибка. Невозможно инициализировать HTML-парсер, что-то не так с контентом.")
 
     try:
         resultsGroup = soup.find("div", id="index")
     except:
         raise ValueError("Ошибка. Нет блока с торрентами.")
-    if resultsGroup == None:
+    if not resultsGroup:
         raise ValueError("Ошибка. Нет блока с торрентами.")
 
     try:
@@ -793,7 +797,6 @@ def rutorResultsOnPage(content):
                                         "Невозможно инициализировать HTML-парсер, что-то не так с контентом."))
 
     result = []
-
     try:
         resultsGroup = soup.find("div", id="index")
     except Exception:
@@ -807,74 +810,78 @@ def rutorResultsOnPage(content):
         return result
 
     for element in elements:
-        allTDinElement = element.find_all("td", recursive=False)
-
-        if len(allTDinElement) == 4:
-            dateElement = allTDinElement[0]
-            mainElement = allTDinElement[1]
-            sizeElement = allTDinElement[2]
-            peersElement = allTDinElement[3]
-        elif len(allTDinElement) == 5:
-            dateElement = allTDinElement[0]
-            mainElement = allTDinElement[1]
-            sizeElement = allTDinElement[3]
-            peersElement = allTDinElement[4]
-        else:
-            raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока торрента."))
-
-        try:
-            components = dateElement.string.split(u"\xa0")
-            torrentDate = datetime.date(
-                (int(components[2]) + 2000) if int(components[2]) < 2000 else int(components[2]),
-                RUTOR_MONTHS[components[1]], int(components[0]))
-        except Exception:
-            raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока даты."))
-
-        try:
-            seeders = int(peersElement.find("span", class_="green").get_text(strip=True))
-            leechers = int(peersElement.find("span", class_="red").get_text(strip=True))
-        except Exception:
-            raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока пиров."))
-
-        try:
-            sizeStr = sizeElement.get_text(strip=True)
-
-            if sizeStr.endswith("GB"):
-                multiplier = 1024 * 1024 * 1024
-            elif sizeStr.endswith("MB"):
-                multiplier = 1024 * 1024
-            elif sizeStr.endswith("KB"):
-                multiplier = 1024
-            else:
-                multiplier = 1
-
-            components = sizeStr.split(u"\xa0")
-            torrentSize = int(float(components[0]) * multiplier)
-        except Exception:
-            raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока размера."))
-        try:
-            mainElements = mainElement.find_all("a")
-            torrentFileLink = mainElements[0].get("href").strip()
-            if not torrentFileLink.startswith("http"):
-                torrentFileLink = urljoin("http://d.rutor.info", torrentFileLink)
-            magnetLink = mainElements[1].get("href").strip()
-
-            if not magnetLink.startswith("magnet"):
-                raise ValueError("Magnet")
-
-            torrentLink = quote(mainElements[2].get("href").strip())
-            if not torrentLink.startswith("http"):
-                torrentLink = urljoin(RUTOR_BASE_URL, torrentLink)
-
-            torrentName = mainElements[2].get_text(strip=True)
-        except Exception as e:
-            raise ValueError(
-                "{} {}".format(datetime.datetime.now(), "Неверный формат основного блока в блоке торрента."))
-
-        result.append({"date": torrentDate, "name": torrentName, "fileLink": torrentFileLink, "magnetLink": magnetLink,
-                       "descriptionLink": torrentLink, "size": torrentSize, "seeders": seeders, "leechers": leechers})
+        film = parse_torrent(element)
+        result.append(film)
 
     return result
+
+
+def parse_torrent(element):
+    allTDinElement = element.find_all("td", recursive=False)
+    if len(allTDinElement) == 4:
+        dateElement = allTDinElement[0]
+        mainElement = allTDinElement[1]
+        sizeElement = allTDinElement[2]
+        peersElement = allTDinElement[3]
+    elif len(allTDinElement) == 5:
+        dateElement = allTDinElement[0]
+        mainElement = allTDinElement[1]
+        sizeElement = allTDinElement[3]
+        peersElement = allTDinElement[4]
+    else:
+        raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока торрента."))
+
+    try:
+        components = dateElement.string.split(u"\xa0")
+        torrentDate = datetime.date(
+            (int(components[2]) + 2000) if int(components[2]) < 2000 else int(components[2]),
+            RUTOR_MONTHS[components[1]], int(components[0]))
+    except Exception:
+        raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока даты."))
+
+    try:
+        seeders = int(peersElement.find("span", class_="green").get_text(strip=True))
+        leechers = int(peersElement.find("span", class_="red").get_text(strip=True))
+    except Exception:
+        raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока пиров."))
+
+    try:
+        sizeStr = sizeElement.get_text(strip=True)
+
+        if sizeStr.endswith("GB"):
+            multiplier = 1024 * 1024 * 1024
+        elif sizeStr.endswith("MB"):
+            multiplier = 1024 * 1024
+        elif sizeStr.endswith("KB"):
+            multiplier = 1024
+        else:
+            multiplier = 1
+
+        components = sizeStr.split(u"\xa0")
+        torrentSize = int(float(components[0]) * multiplier)
+    except Exception:
+        raise ValueError("{} {}".format(datetime.datetime.now(), "Неверный формат блока размера."))
+    try:
+        mainElements = mainElement.find_all("a")
+        torrentFileLink = mainElements[0].get("href").strip()
+        if not torrentFileLink.startswith("http"):
+            torrentFileLink = urljoin("http://d.rutor.info", torrentFileLink)
+        magnetLink = mainElements[1].get("href").strip()
+
+        if not magnetLink.startswith("magnet"):
+            raise ValueError("Magnet")
+
+        torrentLink = quote(mainElements[2].get("href").strip())
+        if not torrentLink.startswith("http"):
+            torrentLink = urljoin(RUTOR_BASE_URL, torrentLink)
+
+        torrentName = mainElements[2].get_text(strip=True)
+    except Exception as e:
+        raise ValueError(
+            "{} {}".format(datetime.datetime.now(), "Неверный формат основного блока в блоке торрента."))
+
+    return ({"date": torrentDate, "name": torrentName, "fileLink": torrentFileLink, "magnetLink": magnetLink,
+             "descriptionLink": torrentLink, "size": torrentSize, "seeders": seeders, "leechers": leechers})
 
 
 def rutorFilmIDForElements(elements):
@@ -1091,7 +1098,8 @@ def kinozalSearch(filmDetail, opener, type):
             return None
 
         return {"link": "http://dl.kinozal.tv/download.php?id={}".format(DBResults[0]["kinozalID"]),
-                "magnet": "magnet:?xt=urn:btih:{}&dn=kinozal.tv".format(match.group(0)), "date": DBResults[0]["torrentDate"],
+                "magnet": "magnet:?xt=urn:btih:{}&dn=kinozal.tv".format(match.group(0)),
+                "date": DBResults[0]["torrentDate"],
                 "type": type}
     elif len(PMResults) > 0:
         newPMResults = []
@@ -1155,17 +1163,16 @@ def kinozalSearch(filmDetail, opener, type):
     return None
 
 
-def saveHTML(movies, filePath, useMagnet=USE_MAGNET):
-    raise NotImplementedError
-    f = open(filePath, 'w', encoding='utf-8')
-    
-    f.close()
-    return
+def compile_html(movies, filePath, useMagnet=USE_MAGNET):
+    env = Environment(loader=FileSystemLoader('.'))
+    template = env.get_template('template.html')
+    return template.render(movies=movies)
+
 
 if __name__ == "__main__":
     try:
         exitCode = start_create_release_page()
-    except:
-        exitCode = 1
-        
+    except Exception as e:
+        exitCode = str(e)
+
     sys.exit(exitCode)

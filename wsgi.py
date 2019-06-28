@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, url_for
 import json
 import requests
 from settings import TRANSMISSION_URL
@@ -9,7 +9,7 @@ PAUSED = False
 
 
 @app.route("/")
-def hello():
+def index():
     with open("releases.html",'br') as f:
         page = f.read()
     return page
@@ -20,7 +20,7 @@ def refresh_release():
     status_code = start_create_release_page(load_days)
     if status_code:
         return "very bad =("
-    return redirect('/')
+    return redirect(url_for('index'))
 
 @app.route("/start/", methods = ['GET'])
 def load_torrent():

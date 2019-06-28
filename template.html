@@ -318,8 +318,8 @@ function sortTorrentsDate(){
       <button id="sortButton2" class="sButton" onclick="sortTorrentsDate()">по дате торрент-релиза</button>
     </div>
     <div class="block1" style="background-color: #f2f2f2;">
-      {% for movie in movies%}
-      <div class="block2" data-releaseDate="{{movie.torrentsDate}}" data-torrentDate="{{movie.torrentsDate}}" data-rating="{{movie.rating}}" data-comboDate="{{movie.torrentDate}}">
+      {% for movie in movies %}
+        <div class="block2" data-releaseDate="{{movie.torrentsDate}}" data-torrentDate="{{movie.torrentsDate}}" data-rating="{{movie.rating}}" data-comboDate="{{movie.torrentDate}}">
         <div class="photoInfoTable">
           <div class="headerFilm">
             <h1 class="moviename" itemprop="name">{{movie.nameRU}}</h1>
@@ -399,6 +399,7 @@ function sortTorrentsDate(){
                   <td>
                     <div style="position: relative">
                         <a href="{{movie.webURL}}" style="text-decoration: underline; color:black" target="_blank">{{movie.ratingKP}}</a>
+                    </div>
                   </td>
                 </tr>
                 <tr>
@@ -438,11 +439,12 @@ function sortTorrentsDate(){
           </div>
         </div>
         <div class="movie-buttons-container">
-          {%for torrent in movie}
+          {%for torrent in movie%}
             <a class='torrentbutton' href='start/?torrent_url={{torrent.link}}'>отправить на скачку</a><a class='torrentbutton' href={{torrent.link}}>{{torrent.type}}</a>
-          {%endfor}
+          {%endfor%}
         </div>
       </div>
+      {%endfor%}
     </div>
   </div>
 </body>
