@@ -33,7 +33,7 @@ if SOCKS5_IP:
     from sockshandler import SocksiPyHandler
 
 
-def start_create_release_page(load_days=LOAD_DAYS):
+def start_create_release_page(load_days=LOAD_DAYS, for_render=False):
     print("Дата и время запуска программы: " + str(datetime.datetime.now()) + ".")
     print("Количество попыток при ошибках соединения: " + str(CONNECTION_ATTEMPTS) + ".")
 
@@ -56,7 +56,9 @@ def start_create_release_page(load_days=LOAD_DAYS):
     results = rutorResultsForDays(load_days)
     movies = convertRutorResults(results, load_days)
     movies.sort(key=operator.itemgetter("torrentsDate"), reverse=True)
-    compile_html(movies, HTML_SAVE_PATH)
+    if for_render:
+        return movies
+    save_html(movies, HTML_SAVE_PATH)
     print("Работа программы завершена успешно.")
 
     return 0
@@ -1163,11 +1165,13 @@ def kinozalSearch(filmDetail, opener, type):
     return None
 
 
-def compile_html(movies, filePath, useMagnet=USE_MAGNET):
-    env = Environment(loader=FileSystemLoader('.'))
+def save_html(movies, filePath, useMagnet=USE_MAGNET):
+    env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('template.html')
-    return template.render(movies=movies)
-
+    ready_html = template.render(movies=movies)
+    with open(filePath, 'w') as f:
+        f.write(ready_html)
+    return ready_html
 
 if __name__ == "__main__":
     try:

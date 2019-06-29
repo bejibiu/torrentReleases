@@ -439,7 +439,7 @@ function sortTorrentsDate(){
           </div>
         </div>
         <div class="movie-buttons-container">
-          {%for torrent in movie%}
+          {%for torrent in movie.torrents%}
             <a class='torrentbutton' href='start/?torrent_url={{torrent.link}}'>отправить на скачку</a><a class='torrentbutton' href={{torrent.link}}>{{torrent.type}}</a>
           {%endfor%}
         </div>
