@@ -26,7 +26,6 @@ class Movie(object):
         self.sortTorrentsDate = None
         self.description = None
 
-
     def set_rating_age(self, rating_age: str):
         if rating_age.isDigit():
             rating_age = int(rating_age)

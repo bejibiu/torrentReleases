@@ -1173,6 +1173,7 @@ def save_html(movies, filePath, useMagnet=USE_MAGNET):
         f.write(ready_html)
     return ready_html
 
+
 if __name__ == "__main__":
     try:
         exitCode = start_create_release_page()
