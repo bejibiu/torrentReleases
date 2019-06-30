@@ -16,15 +16,18 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
 
+from digitalreleases3 import SOCKS5_PORT
+from rutor import load_rutor_content, load_url_content
+
 from settings import (
     BASE_DIR, LOAD_DAYS, MIN_VOTES_KP, MIN_VOTES_IMDB, HTML_SAVE_PATH,
     CONNECTION_ATTEMPTS, RUTOR_BASE_URL, RUTOR_MONTHS, RUTOR_SEARCH_MAIN, KINOPOISK_API_IOS_BASE_URL,
     KINOPOISK_API_IOS_FILMDETAIL, KINOPOISK_API_SALT, KINOPOISK_CLIENTID,
     KINOPOISK_UUID, KINOPOISK_POSTER_URL, KINOZAL_SEARCH_BDREMUX, KINOZAL_SEARCH_BDRIP, KINOZAL_USERNAME,
-    KINOZAL_PASSWORD, SOCKS5_IP
-)
+    KINOZAL_PASSWORD, SOCKS5_IP,
+    FOREIGN_FILM, OUR_FILM, CARTOON, ANIME)
 
-SOCKS5_PORT = 9050
+
 if SOCKS5_IP:
     import socks
     from sockshandler import SocksiPyHandler
@@ -62,10 +65,10 @@ def start_create_release_page(load_days=LOAD_DAYS, for_render=False):
 
 
 def rutor_results_for_days(load_days):
-    targetDate = datetime.date.today() - datetime.timedelta(days=load_days)
-    groups = [1, 5, 7, 10]
-    tmpSet = set()
-    tmpResults = {}
+    target_date = datetime.date.today() - datetime.timedelta(days=load_days)
+    groups = [FOREIGN_FILM, OUR_FILM, CARTOON, ANIME]
+    tmp_set = set()
+    tmp_results = {}
 
     for group in groups:
         try:
@@ -77,16 +80,16 @@ def rutor_results_for_days(load_days):
                 "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
 
         i = 0
-        needMore = True
+        need_more = True
 
-        while needMore:
+        while need_more:
             pageResults = rutorResultsOnPage(content)
             for result in pageResults:
-                if result["date"] >= targetDate:
+                if result["date"] >= target_date:
                     element = parseRutorElement(result)
                     if not element:
                         continue
-                    if (element["compareName"] in tmpSet):
+                    if (element["compareName"] in tmp_set):
                         continue
                     print("Обработка раздачи: {} ({})...".format(element["nameRU"], element["year"]))
                     try:
@@ -95,19 +98,19 @@ def rutor_results_for_days(load_days):
                     except:
                         raise ConnectionError(
                             "Ошибка. Не удалось загрузить данные похожих раздач или загрузить страницу с описанием.")
-                    tmpSet.add(element["compareName"])
+                    tmp_set.add(element["compareName"])
                     if len(elements) > 0:
-                        if (tmpResults.get(elements[0]["filmID"])):
-                            tmpResults[elements[0]["filmID"]].extend(elements)
+                        if (tmp_results.get(elements[0]["filmID"])):
+                            tmp_results[elements[0]["filmID"]].extend(elements)
                         else:
-                            tmpResults[elements[0]["filmID"]] = elements
+                            tmp_results[elements[0]["filmID"]] = elements
                 else:
-                    needMore = False
+                    need_more = False
                     break
             i = i + 1
             if (i >= count):
-                needMore = False
-            if needMore:
+                need_more = False
+            if need_more:
                 print("Загрузка списка предварительно подходящих раздач...")
                 try:
                     content = load_rutor_content(RUTOR_SEARCH_MAIN.format(i, group, ""), useProxy=True)
@@ -115,7 +118,7 @@ def rutor_results_for_days(load_days):
                     raise ConnectionError(
                         "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
 
-    return tmpResults
+    return tmp_results
 
 
 def convert_rutor_results(rutorResults, load_days):
@@ -322,12 +325,6 @@ def convert_rutor_results(rutorResults, load_days):
     return movies
 
 
-def load_rutor_content(URL, attempts=CONNECTION_ATTEMPTS, useProxy=False):
-    headers = {}
-    headers["Accept-encoding"] = "gzip"
-    headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"
-
-    return load_url_content(URL, headers=headers, attempts=attempts, useProxy=useProxy)
 
 
 def rutor_pages_count_for_results(content):
@@ -356,33 +353,6 @@ def rutor_pages_count_for_results(content):
 
     return last_index
 
-
-def load_url_content(url, headers={}, attempts=CONNECTION_ATTEMPTS, useProxy=False):
-    if useProxy and SOCKS5_IP:
-        proxy_handler = SocksiPyHandler(socks.PROXY_TYPE_SOCKS5, SOCKS5_IP, SOCKS5_PORT)
-        opener = urllib.request.build_opener(proxy_handler)
-    else:
-        opener = urllib.request.build_opener()
-
-    request = urllib.request.Request(url, headers=headers)
-    response = None
-    n = attempts
-    while n > 0:
-        try:
-            response = opener.open(request)
-            break
-        except:
-            n = n - 1
-            if n <= 0:
-                raise ConnectionError("Ошибка соединения. Все попытки соединения израсходованы.")
-
-    if response.info().get("Content-Encoding") == "gzip":
-        gzip_file = gzip.GzipFile(fileobj=response)
-        content = gzip_file.read().decode("utf-8")
-    else:
-        content = response.read().decode("utf-8")
-
-    return content
 
 
 def kinopoisk_rating(filmID, useProxy=False):
