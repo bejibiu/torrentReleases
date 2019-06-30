@@ -16,9 +16,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
 
-from digitalreleases3 import SOCKS5_PORT
 from rutor import load_rutor_content, load_url_content
-
 from settings import (
     BASE_DIR, LOAD_DAYS, MIN_VOTES_KP, MIN_VOTES_IMDB, HTML_SAVE_PATH,
     CONNECTION_ATTEMPTS, RUTOR_BASE_URL, RUTOR_MONTHS, RUTOR_SEARCH_MAIN, KINOPOISK_API_IOS_BASE_URL,
@@ -26,7 +24,7 @@ from settings import (
     KINOPOISK_UUID, KINOPOISK_POSTER_URL, KINOZAL_SEARCH_BDREMUX, KINOZAL_SEARCH_BDRIP, KINOZAL_USERNAME,
     KINOZAL_PASSWORD, SOCKS5_IP,
     FOREIGN_FILM, OUR_FILM, CARTOON, ANIME)
-
+from settings import SOCKS5_PORT
 
 if SOCKS5_IP:
     import socks
@@ -41,18 +39,6 @@ def start_create_release_page(load_days=LOAD_DAYS, for_render=False):
         print("Для rutor.info и kinozal.tv будет использоваться прокси-сервер SOCKS5: " + SOCKS5_IP + ":" + str(
             SOCKS5_PORT) + ".")
 
-    print("Проверка доступности rutor.info...")
-    try:
-        content = load_rutor_content(RUTOR_SEARCH_MAIN.format(0, 0, ""), useProxy=True)
-        count = rutor_pages_count_for_results(content)
-    except:
-        print("Сайт rutor.info недоступен, или изменился его формат данных.")
-        print("Работа программы принудительно завершена.")
-        return 1
-    else:
-        print("Сайт rutor.info доступен.")
-
-    print("Анализ раздач...")
     results = rutor_results_for_days(load_days)
     movies = convert_rutor_results(results, load_days)
     movies.sort(key=operator.itemgetter("torrentsDate"), reverse=True)
@@ -74,7 +60,7 @@ def rutor_results_for_days(load_days):
         try:
             print("Загрузка списка предварительно подходящих раздач...")
             content = load_rutor_content(RUTOR_SEARCH_MAIN.format(0, group, ""), useProxy=True)
-            count = rutor_pages_count_for_results(content)
+            count_page_result = rutor_pages_count_for_results(content)
         except:
             raise ConnectionError(
                 "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
@@ -108,7 +94,7 @@ def rutor_results_for_days(load_days):
                     need_more = False
                     break
             i = i + 1
-            if (i >= count):
+            if (i >= count_page_result):
                 need_more = False
             if need_more:
                 print("Загрузка списка предварительно подходящих раздач...")
@@ -225,6 +211,7 @@ def convert_rutor_results(rutorResults, load_days):
             detail = filmDetail(values[0]["filmID"])
         except:
             print("Загрузка не удалась. Пропуск фильма с ID " + values[0]["filmID"] + ".")
+            break
 
         print("Загружены данные для фильма: " + detail["nameRU"] + ".")
 
