@@ -211,7 +211,6 @@ def convert_rutor_results(rutorResults, load_days):
             detail = filmDetail(values[0]["filmID"])
         except:
             print("Загрузка не удалась. Пропуск фильма с ID " + values[0]["filmID"] + ".")
-            break
 
         print("Загружены данные для фильма: " + detail["nameRU"] + ".")
 
