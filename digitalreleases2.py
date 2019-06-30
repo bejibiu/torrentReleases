@@ -1,28 +1,25 @@
-from bs4 import BeautifulSoup
-import hashlib
 import datetime
-import urllib.request
-from urllib.parse import urljoin
-from urllib.parse import quote
-import time
 import gzip
+import hashlib
+import http.cookiejar
 import json
-import html
-import re
 import operator
 import os
-import binascii
-import urllib.parse
-import http.cookiejar
+import re
 import sys
-from jinja2 import Template, Environment, FileSystemLoader
+import time
+import urllib.parse
+import urllib.request
+from urllib.parse import quote
+from urllib.parse import urljoin
 
-from models import Movie
+from bs4 import BeautifulSoup
+from jinja2 import Environment, FileSystemLoader
 
 from settings import (
-    BASE_DIR, LOAD_DAYS, USE_MAGNET, SORT_TYPE, MIN_VOTES_KP, MIN_VOTES_IMDB, HTML_SAVE_PATH,
+    BASE_DIR, LOAD_DAYS, MIN_VOTES_KP, MIN_VOTES_IMDB, HTML_SAVE_PATH,
     CONNECTION_ATTEMPTS, RUTOR_BASE_URL, RUTOR_MONTHS, RUTOR_SEARCH_MAIN, KINOPOISK_API_IOS_BASE_URL,
-    KINOPOISK_API_V1_BASE_URL, KINOPOISK_API_IOS_FILMDETAIL, KINOPOISK_API_SALT, KINOPOISK_CLIENTID,
+    KINOPOISK_API_IOS_FILMDETAIL, KINOPOISK_API_SALT, KINOPOISK_CLIENTID,
     KINOPOISK_UUID, KINOPOISK_POSTER_URL, KINOZAL_SEARCH_BDREMUX, KINOZAL_SEARCH_BDRIP, KINOZAL_USERNAME,
     KINOZAL_PASSWORD, SOCKS5_IP
 )
@@ -43,8 +40,8 @@ def start_create_release_page(load_days=LOAD_DAYS, for_render=False):
 
     print("Проверка доступности rutor.info...")
     try:
-        content = loadRutorContent(RUTOR_SEARCH_MAIN.format(0, 0, ""), useProxy=True)
-        count = rutorPagesCountForResults(content)
+        content = load_rutor_content(RUTOR_SEARCH_MAIN.format(0, 0, ""), useProxy=True)
+        count = rutor_pages_count_for_results(content)
     except:
         print("Сайт rutor.info недоступен, или изменился его формат данных.")
         print("Работа программы принудительно завершена.")
@@ -53,8 +50,8 @@ def start_create_release_page(load_days=LOAD_DAYS, for_render=False):
         print("Сайт rutor.info доступен.")
 
     print("Анализ раздач...")
-    results = rutorResultsForDays(load_days)
-    movies = convertRutorResults(results, load_days)
+    results = rutor_results_for_days(load_days)
+    movies = convert_rutor_results(results, load_days)
     movies.sort(key=operator.itemgetter("torrentsDate"), reverse=True)
     if for_render:
         return movies
@@ -64,7 +61,7 @@ def start_create_release_page(load_days=LOAD_DAYS, for_render=False):
     return 0
 
 
-def rutorResultsForDays(load_days):
+def rutor_results_for_days(load_days):
     targetDate = datetime.date.today() - datetime.timedelta(days=load_days)
     groups = [1, 5, 7, 10]
     tmpSet = set()
@@ -73,8 +70,8 @@ def rutorResultsForDays(load_days):
     for group in groups:
         try:
             print("Загрузка списка предварительно подходящих раздач...")
-            content = loadRutorContent(RUTOR_SEARCH_MAIN.format(0, group, ""), useProxy=True)
-            count = rutorPagesCountForResults(content)
+            content = load_rutor_content(RUTOR_SEARCH_MAIN.format(0, group, ""), useProxy=True)
+            count = rutor_pages_count_for_results(content)
         except:
             raise ConnectionError(
                 "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
@@ -113,7 +110,7 @@ def rutorResultsForDays(load_days):
             if needMore:
                 print("Загрузка списка предварительно подходящих раздач...")
                 try:
-                    content = loadRutorContent(RUTOR_SEARCH_MAIN.format(i, group, ""), useProxy=True)
+                    content = load_rutor_content(RUTOR_SEARCH_MAIN.format(i, group, ""), useProxy=True)
                 except:
                     raise ConnectionError(
                         "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
@@ -121,9 +118,9 @@ def rutorResultsForDays(load_days):
     return tmpResults
 
 
-def convertRutorResults(rutorResults, load_days):
-    targetDate = datetime.date.today() - datetime.timedelta(days=load_days)
-    minPremierDate = datetime.date.today() - datetime.timedelta(days=365)
+def convert_rutor_results(rutorResults, load_days):
+    target_date = datetime.date.today() - datetime.timedelta(days=load_days)
+    min_premier_date = datetime.date.today() - datetime.timedelta(days=365)
 
     movies = []
 
@@ -150,10 +147,10 @@ def convertRutorResults(rutorResults, load_days):
                 else:
                     WBDate = min(WBDate, value["date"])
         if BDDate:
-            if BDDate < targetDate:
+            if BDDate < target_date:
                 continue
         else:
-            if WBDate < targetDate:
+            if WBDate < target_date:
                 continue
 
         tr = {}
@@ -231,7 +228,7 @@ def convertRutorResults(rutorResults, load_days):
         if not detail.get("premierDate"):
             print("У фильма \"" + detail["nameRU"] + "\" нет даты премьеры. Пропуск фильма.")
             continue
-        if detail["premierDate"] < minPremierDate:
+        if detail["premierDate"] < min_premier_date:
             print("Фильм \"" + detail["nameRU"] + "\" слишком старый. Пропуск фильма.")
             continue
 
@@ -325,50 +322,45 @@ def convertRutorResults(rutorResults, load_days):
     return movies
 
 
-def loadRutorContent(URL, attempts=CONNECTION_ATTEMPTS, useProxy=False):
+def load_rutor_content(URL, attempts=CONNECTION_ATTEMPTS, useProxy=False):
     headers = {}
     headers["Accept-encoding"] = "gzip"
     headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"
 
-    return loadURLContent(URL, headers=headers, attempts=attempts, useProxy=useProxy)
+    return load_url_content(URL, headers=headers, attempts=attempts, useProxy=useProxy)
 
 
-def rutorPagesCountForResults(content):
-    soup = BeautifulSoup(content, 'html.parser')
+def rutor_pages_count_for_results(content):
+    soup: BeautifulSoup = BeautifulSoup(content, 'html.parser')
 
-    if (not soup):
+    if not soup:
         raise ValueError("Ошибка. Невозможно инициализировать HTML-парсер, что-то не так с контентом.")
 
-    try:
-        resultsGroup = soup.find("div", id="index")
-    except:
-        raise ValueError("Ошибка. Нет блока с торрентами.")
-    if not resultsGroup:
+    results_group = soup.find("div", id="index")
+
+    if not results_group:
         raise ValueError("Ошибка. Нет блока с торрентами.")
 
-    try:
-        indexes = [text for text in resultsGroup.b.stripped_strings]
-    except:
-        raise ValueError("Ошибка. Нет блока со страницами результатов.")
+    indexes = [text for text in results_group.b.stripped_strings]
     if len(indexes) == 0:
         raise ValueError("Ошибка. Нет блока со страницами результатов.")
 
-    lastIndexStr = indexes[-1]
-    if lastIndexStr.startswith("Страницы"):
+    last_index_str = indexes[-1]
+    if last_index_str.startswith("Страницы"):
         return 1
 
-    lastIndex = int(lastIndexStr)
+    last_index = int(last_index_str)
 
-    if lastIndex <= 0:
+    if last_index <= 0:
         raise ValueError("Ошибка. Неверное значение индекса страницы.")
 
-    return lastIndex
+    return last_index
 
 
-def loadURLContent(url, headers={}, attempts=CONNECTION_ATTEMPTS, useProxy=False):
+def load_url_content(url, headers={}, attempts=CONNECTION_ATTEMPTS, useProxy=False):
     if useProxy and SOCKS5_IP:
-        proxyHandler = SocksiPyHandler(socks.PROXY_TYPE_SOCKS5, SOCKS5_IP, SOCKS5_PORT)
-        opener = urllib.request.build_opener(proxyHandler)
+        proxy_handler = SocksiPyHandler(socks.PROXY_TYPE_SOCKS5, SOCKS5_IP, SOCKS5_PORT)
+        opener = urllib.request.build_opener(proxy_handler)
     else:
         opener = urllib.request.build_opener()
 
@@ -381,48 +373,47 @@ def loadURLContent(url, headers={}, attempts=CONNECTION_ATTEMPTS, useProxy=False
             break
         except:
             n = n - 1
-            if (n <= 0):
+            if n <= 0:
                 raise ConnectionError("Ошибка соединения. Все попытки соединения израсходованы.")
 
     if response.info().get("Content-Encoding") == "gzip":
-        gzipFile = gzip.GzipFile(fileobj=response)
-        content = gzipFile.read().decode("utf-8")
+        gzip_file = gzip.GzipFile(fileobj=response)
+        content = gzip_file.read().decode("utf-8")
     else:
         content = response.read().decode("utf-8")
 
     return content
 
 
-def kinopoiskRating(filmID, useProxy=False):
+def kinopoisk_rating(filmID, useProxy=False):
     result = {}
 
-    headers = {}
-    headers["Accept-encoding"] = "gzip"
-    headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"
+    headers = {"Accept-encoding": "gzip",
+               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"}
 
     if useProxy and SOCKS5_IP:
-        proxyHandler = SocksiPyHandler(socks.PROXY_TYPE_SOCKS5, SOCKS5_IP, SOCKS5_PORT)
-        opener = urllib.request.build_opener(proxyHandler)
+        proxy_handler = SocksiPyHandler(socks.PROXY_TYPE_SOCKS5, SOCKS5_IP, SOCKS5_PORT)
+        opener = urllib.request.build_opener(proxy_handler)
     else:
         opener = urllib.request.build_opener()
 
-    request = urllib.request.Request("https://rating.kinopoisk.ru/{}.xml".format(filmID), headers=headers)
+    request = urllib.request.Request(f"https://rating.kinopoisk.ru/{filmID}.xml", headers=headers)
     response = opener.open(request)
     if response.info().get("Content-Encoding") == "gzip":
-        gzipFile = gzip.GzipFile(fileobj=response)
-        content = gzipFile.read().decode(response.info().get_content_charset())
+        gzip_file = gzip.GzipFile(fileobj=response)
+        content = gzip_file.read().decode(response.info().get_content_charset())
     else:
         content = response.read().decode(response.info().get_content_charset())
 
-    patternKP = re.compile("<kp_rating num_vote=\"([0-9]+)\">([0-9]*\.[0-9]*)</kp_rating>")
-    matches = re.findall(patternKP, content)
+    pattern_KP = re.compile("<kp_rating num_vote=\"([0-9]+)\">([0-9]*\.[0-9]*)</kp_rating>")
+    matches = re.findall(pattern_KP, content)
 
     if len(matches) == 1:
         result["rating"] = matches[0][1]
         result["ratingVoteCount"] = matches[0][0]
 
-    patternIMDb = re.compile("<imdb_rating num_vote=\"([0-9]+)\">([0-9]*\.[0-9]*)</imdb_rating>")
-    matches = re.findall(patternIMDb, content)
+    pattern_IMDb = re.compile("<imdb_rating num_vote=\"([0-9]+)\">([0-9]*\.[0-9]*)</imdb_rating>")
+    matches = re.findall(pattern_IMDb, content)
 
     if len(matches) == 1:
         result["ratingIMDb"] = matches[0][1]
@@ -567,7 +558,7 @@ def filmDetail(filmID):
 
     freshRating = {}
     try:
-        freshRating = kinopoiskRating(filmID)
+        freshRating = kinopoisk_rating(filmID)
     except:
         pass
 
@@ -774,7 +765,7 @@ def parseRutorElement(dict):
 
 def rutorSearchSimilarElements(element, group):
     results = []
-    content = loadRutorContent(RUTOR_SEARCH_MAIN.format(0, group, quote(element["searchPattern"])), useProxy=True)
+    content = load_rutor_content(RUTOR_SEARCH_MAIN.format(0, group, quote(element["searchPattern"])), useProxy=True)
     try:
         pageResults = rutorResultsOnPage(content)
     except:
@@ -889,7 +880,7 @@ def parse_torrent(element):
 def rutorFilmIDForElements(elements):
     kID = None
     for element in elements:
-        content = loadRutorContent(element["descriptionLink"], useProxy=True)
+        content = load_rutor_content(element["descriptionLink"], useProxy=True)
 
         patternLink = re.compile("\"http://www.kinopoisk.ru/film/(.*?)/\"")
         matches = re.findall(patternLink, content)
@@ -937,7 +928,7 @@ def loadKinopoiskContent(baseURL, requestMethod, CLIENTID=KINOPOISK_CLIENTID, AP
     headers["X-TIMESTAMP"] = timestamp
     headers["X-SIGNATURE"] = hashlib.md5(hashString.encode('utf-8')).hexdigest()
 
-    return loadURLContent(baseURL + requestMethod, headers=headers, attempts=attempts, useProxy=useProxy)
+    return load_url_content(baseURL + requestMethod, headers=headers, attempts=attempts, useProxy=useProxy)
 
 
 def kinozalAuth(username, password, useProxy=True):
@@ -1165,12 +1156,13 @@ def kinozalSearch(filmDetail, opener, type):
     return None
 
 
-def save_html(movies, filePath, useMagnet=USE_MAGNET):
-    env = Environment(loader=FileSystemLoader('templates'))
+def save_html(movies, filePath):
+    env = Environment(loader=FileSystemLoader(os.path.join(BASE_DIR, 'templates')))
     template = env.get_template('template.html')
     ready_html = template.render(movies=movies)
-    with open(filePath, 'w') as f:
-        f.write(ready_html)
+    if filePath:
+        with open(filePath, 'w') as f:
+            f.write(ready_html)
     return ready_html
 
 
