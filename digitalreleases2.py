@@ -123,7 +123,7 @@ def convert_rutor_results(rutorResults, load_days):
     except:
         opener = None
 
-    for key, values in rutorResults.items():
+    for _, values in rutorResults.items():
         BDDate = None
         WBDate = None
         for value in values:
@@ -827,7 +827,7 @@ def parse_torrent(element):
             torrentLink = urljoin(RUTOR_BASE_URL, torrentLink)
 
         torrentName = mainElements[2].get_text(strip=True)
-    except Exception as e:
+    except Exception:
         raise ValueError(
             "{} {}".format(datetime.datetime.now(), "Неверный формат основного блока в блоке торрента."))
 
