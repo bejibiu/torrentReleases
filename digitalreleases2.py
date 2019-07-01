@@ -64,48 +64,50 @@ def rutor_results_for_days(load_days):
         except:
             raise ConnectionError(
                 "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
-
-        page = 0
-        need_more = True
-
-        while need_more:
-            page_results = rutor_results_on_page(content_on_page)
-            for result in page_results:
-                if result["date"] >= target_date:
-                    element = parseRutorElement(result)
-                    if not element:
-                        continue
-                    if (element["compareName"] in tmp_set):
-                        continue
-                    print("Обработка раздачи: {} ({})...".format(element["nameRU"], element["year"]))
-                    try:
-                        elements = rutor_search_similar_elements(element, group)
-                        elements = rutorFilmIDForElements(elements)
-                    except:
-                        raise ConnectionError(
-                            "Ошибка. Не удалось загрузить данные похожих раздач или загрузить страницу с описанием.")
-                    tmp_set.add(element["compareName"])
-                    if len(elements) > 0:
-                        if (tmp_results.get(elements[0]["filmID"])):
-                            tmp_results[elements[0]["filmID"]].extend(elements)
-                        else:
-                            tmp_results[elements[0]["filmID"]] = elements
-                else:
-                    need_more = False
-                    break
-            page = page + 1
-            if (page >= count_page_result):
-                need_more = False
-            if need_more:
-                print("Загрузка списка предварительно подходящих раздач...")
-                try:
-                    content_on_page = load_rutor_content(RUTOR_SEARCH_MAIN.format(page, group, ""), useProxy=True)
-                except:
-                    raise ConnectionError(
-                        "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
+        tmp_results = take_torrent_from_pages(content_on_page, target_date, tmp_set, group, tmp_results, count_page_result)
 
     return tmp_results
 
+# TODO: Fix this function
+def take_torrent_from_pages(content_on_page, target_date, tmp_set, group, tmp_results, count_page_result):
+    page = 0
+    need_more = True
+    while need_more:
+        page_results = rutor_results_on_page(content_on_page)
+        for result in page_results:
+            if result["date"] >= target_date:
+                element = parseRutorElement(result)
+                if not element:
+                    continue
+                if (element["compareName"] in tmp_set):
+                    continue
+                print("Обработка раздачи: {} ({})...".format(element["nameRU"], element["year"]))
+                try:
+                    elements = rutor_search_similar_elements(element, group)
+                    elements = rutorFilmIDForElements(elements)
+                except:
+                    raise ConnectionError(
+                        "Ошибка. Не удалось загрузить данные похожих раздач или загрузить страницу с описанием.")
+                tmp_set.add(element["compareName"])
+                if len(elements) > 0:
+                    if (tmp_results.get(elements[0]["filmID"])):
+                        tmp_results[elements[0]["filmID"]].extend(elements)
+                    else:
+                        tmp_results[elements[0]["filmID"]] = elements
+            else:
+                need_more = False
+                break
+        page = page + 1
+        if (page >= count_page_result):
+            need_more = False
+        if need_more:
+            print("Загрузка списка предварительно подходящих раздач...")
+            try:
+                content_on_page = load_rutor_content(RUTOR_SEARCH_MAIN.format(page, group, ""), useProxy=True)
+            except:
+                raise ConnectionError(
+                    "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
+    return tmp_results
 
 def convert_rutor_results(rutorResults, load_days):
     target_date = datetime.date.today() - datetime.timedelta(days=load_days)
