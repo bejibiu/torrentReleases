@@ -59,18 +59,18 @@ def rutor_results_for_days(load_days):
     for group in groups:
         try:
             print("Загрузка списка предварительно подходящих раздач...")
-            content = load_rutor_content(RUTOR_SEARCH_MAIN.format(0, group, ""), useProxy=True)
-            count_page_result = rutor_pages_count_for_results(content)
+            content_on_page = load_rutor_content(RUTOR_SEARCH_MAIN.format(0, group, ""), useProxy=True)
+            count_page_result = rutor_pages_count_for_results(content_on_page)
         except:
             raise ConnectionError(
                 "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
 
-        i = 0
+        page = 0
         need_more = True
 
         while need_more:
-            pageResults = rutorResultsOnPage(content)
-            for result in pageResults:
+            page_results = rutor_results_on_page(content_on_page)
+            for result in page_results:
                 if result["date"] >= target_date:
                     element = parseRutorElement(result)
                     if not element:
@@ -79,7 +79,7 @@ def rutor_results_for_days(load_days):
                         continue
                     print("Обработка раздачи: {} ({})...".format(element["nameRU"], element["year"]))
                     try:
-                        elements = rutorSearchSimilarElements(element, group)
+                        elements = rutor_search_similar_elements(element, group)
                         elements = rutorFilmIDForElements(elements)
                     except:
                         raise ConnectionError(
@@ -93,13 +93,13 @@ def rutor_results_for_days(load_days):
                 else:
                     need_more = False
                     break
-            i = i + 1
-            if (i >= count_page_result):
+            page = page + 1
+            if (page >= count_page_result):
                 need_more = False
             if need_more:
                 print("Загрузка списка предварительно подходящих раздач...")
                 try:
-                    content = load_rutor_content(RUTOR_SEARCH_MAIN.format(i, group, ""), useProxy=True)
+                    content_on_page = load_rutor_content(RUTOR_SEARCH_MAIN.format(page, group, ""), useProxy=True)
                 except:
                     raise ConnectionError(
                         "Ошибка. Не удалось загрузить страницу с результатами поиска или формат данных rutor.info изменился.")
@@ -719,41 +719,41 @@ def parseRutorElement(dict):
     return result
 
 
-def rutorSearchSimilarElements(element, group):
+def rutor_search_similar_elements(element, group):
     results = []
     content = load_rutor_content(RUTOR_SEARCH_MAIN.format(0, group, quote(element["searchPattern"])), useProxy=True)
     try:
-        pageResults = rutorResultsOnPage(content)
+        page_results = rutor_results_on_page(content)
     except:
         # print(RUTOR_SEARCH_MAIN.format(0, group, quote(element["searchPattern"])))
         return results
 
-    for result in pageResults:
-        tmpElement = parseRutorElement(result)
-        if not tmpElement:
+    for result in page_results:
+        tmp_element = parseRutorElement(result)
+        if not tmp_element:
             continue
-        if tmpElement["compareName"] == element["compareName"]:
-            results.append(tmpElement)
+        if tmp_element["compareName"] == element["compareName"]:
+            results.append(tmp_element)
 
     return results
 
 
-def rutorResultsOnPage(content):
+def rutor_results_on_page(content):
     soup = BeautifulSoup(content, 'html.parser')
 
-    if (soup == None):
+    if not soup:
         raise ValueError("{} {}".format(datetime.datetime.now(),
                                         "Невозможно инициализировать HTML-парсер, что-то не так с контентом."))
 
     result = []
     try:
-        resultsGroup = soup.find("div", id="index")
+        results_group = soup.find("div", id="index")
     except Exception:
         raise ValueError("{} {}".format(datetime.datetime.now(), "Нет блока с торрентами."))
-    if resultsGroup == None:
+    if not results_group:
         raise ValueError("{} {}".format(datetime.datetime.now(), "Нет блока с торрентами."))
 
-    elements = resultsGroup.find_all("tr", class_=["gai", "tum"])
+    elements = results_group.find_all("tr", class_=["gai", "tum"])
 
     if len(elements) == 0:
         return result
