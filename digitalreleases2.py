@@ -316,7 +316,7 @@ def convert_rutor_results(rutorResults, load_days):
 
 
 def rutor_pages_count_for_results(content):
-    soup: BeautifulSoup = BeautifulSoup(content, 'html.parser')
+    soup = BeautifulSoup(content, 'html.parser')
 
     if not soup:
         raise ValueError("Ошибка. Невозможно инициализировать HTML-парсер, что-то не так с контентом.")
@@ -355,7 +355,7 @@ def kinopoisk_rating(filmID, useProxy=False):
     else:
         opener = urllib.request.build_opener()
 
-    request = urllib.request.Request(f"https://rating.kinopoisk.ru/{filmID}.xml", headers=headers)
+    request = urllib.request.Request("https://rating.kinopoisk.ru/{}.xml".format(filmID), headers=headers)
     response = opener.open(request)
     if response.info().get("Content-Encoding") == "gzip":
         gzip_file = gzip.GzipFile(fileobj=response)
